@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'ticker_page.dart';
 
 void main() {
-  runApp(const ProviderScope(child: TickerApp()));
+  runApp(
+    ProviderScope(retry: (retryCount, error) => null, child: const TickerApp()),
+  );
 }
 
 class TickerApp extends StatelessWidget {
@@ -13,10 +16,7 @@ class TickerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ticker',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.teal,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
       home: const TickerPage(),
     );
   }
