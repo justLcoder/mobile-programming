@@ -1,3 +1,7 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'bloc/app_bloc_observer.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,7 +10,10 @@ import 'cubit/cart_page_cubit.dart';
 import 'riverpod/cart_page_riverpod.dart';
 import 'setstate/cart_page_setstate.dart';
 
-void main() => runApp(const ProviderScope(child: App()));
+void main() {
+  Bloc.observer = const AppBlocObserver(); // T2
+  runApp(const ProviderScope(child: App()));
+}
 
 class App extends StatelessWidget {
   const App({super.key});

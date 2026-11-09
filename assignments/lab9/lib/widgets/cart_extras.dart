@@ -107,9 +107,11 @@ class CheckoutButton extends StatelessWidget {
     super.key,
     required this.submitting,
     required this.onPressed,
+    this.lockWhileSubmitting = true,
   });
   final bool submitting;
   final VoidCallback? onPressed;
+  final bool lockWhileSubmitting; // Bloc page sets false: droppable() drops the extra taps instead
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -117,7 +119,7 @@ class CheckoutButton extends StatelessWidget {
     child: SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
-        onPressed: submitting ? null : onPressed,
+        onPressed: submitting && lockWhileSubmitting ? null : onPressed,
         icon: submitting
             ? const SizedBox.square(
                 dimension: 16,
