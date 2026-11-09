@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show listEquals;
+
 class Product {
   const Product({required this.id, required this.name, required this.price});
   final String id;
@@ -18,6 +20,13 @@ class CartLine {
   double get subtotal => product.price * qty;
   CartLine copyWith({int? qty}) =>
       CartLine(product: product, qty: qty ?? this.qty);
+
+  @override
+  bool operator ==(Object other) =>
+      other is CartLine && other.product.id == product.id && other.qty == qty;
+
+  @override
+  int get hashCode => Object.hash(product.id, qty);
 }
 
 /// Pure, style-independent cart logic. Every state holder calls these.
@@ -60,6 +69,7 @@ class CartState {
     this.status = CheckoutStatus.idle,
     this.orderId,
     this.checkoutError,
+    this.history = const [],
   });
 
   final List<CartLine> lines;
@@ -68,12 +78,13 @@ class CartState {
   final CheckoutStatus status;
   final String? orderId;
   final String? checkoutError;
+  final List<CartState> history; // Part 4 T5: undo history as part of state
 
-  // T3: derived values are getters, never stored fields
   int get itemCount => lines.itemCount;
   double get subtotal => lines.subtotal;
   double get discount => coupon == 'SAVE10' ? subtotal * 0.10 : 0;
   double get total => subtotal - discount;
+  bool get canUndo => history.isNotEmpty;
 
   CartState copyWith({
     List<CartLine>? lines,
@@ -82,6 +93,7 @@ class CartState {
     CheckoutStatus? status,
     Object? orderId = _keep,
     Object? checkoutError = _keep,
+    List<CartState>? history,
   }) => CartState(
     lines: lines ?? this.lines,
     coupon: identical(coupon, _keep) ? this.coupon : coupon as String?,
@@ -93,10 +105,48 @@ class CartState {
     checkoutError: identical(checkoutError, _keep)
         ? this.checkoutError
         : checkoutError as String?,
+    history: history ?? this.history,
   );
 
-  /// Pure coupon rule, shared by all four styles.
   CartState withCoupon(String code) => code.trim().toUpperCase() == 'SAVE10'
       ? copyWith(coupon: 'SAVE10', couponError: null)
       : copyWith(coupon: null, couponError: 'Unknown coupon "$code"');
+
+  /// Pure undo helpers: [next] with the current state pushed onto history / pop it back.
+  CartState commit(CartState next) => next.copyWith(
+    history: [
+      ...history,
+      copyWith(history: const []),
+    ],
+  );
+  CartState undo() => history.isEmpty
+      ? this
+      : history.last.copyWith(history: history.sublist(0, history.length - 1));
+
+  @override
+  bool operator ==(Object other) =>
+      other is CartState &&
+      listEquals(other.lines, lines) &&
+      other.coupon == coupon &&
+      other.couponError == couponError &&
+      other.status == status &&
+      other.orderId == orderId &&
+      other.checkoutError == checkoutError &&
+      listEquals(other.history, history);
+
+  @override
+  int get hashCode => Object.hash(
+    Object.hashAll(lines),
+    coupon,
+    couponError,
+    status,
+    orderId,
+    checkoutError,
+    Object.hashAll(history),
+  );
+
+  @override
+  String toString() =>
+      'CartState(items: $itemCount, total: ${total.toStringAsFixed(2)}, coupon: $coupon, '
+      'status: ${status.name}, history: ${history.length})';
 }
