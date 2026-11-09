@@ -15,8 +15,9 @@ class CartNotifier extends Notifier<CartState> {
   bool get canUndo => _history.isNotEmpty;
 
   void _commit(CartState next) {
-    if (next == state)
+    if (next == state) {
       return; // nothing changed: no history entry, no notification
+    }
     _history.add(state);
     state = next; // assignment notifies listeners (if != old state)
   }
@@ -36,8 +37,9 @@ class CartNotifier extends Notifier<CartState> {
     state = state.copyWith(status: CheckoutStatus.submitting);
     try {
       final id = await ref.read(checkoutApiProvider).submit(state.total);
-      if (!ref.mounted)
+      if (!ref.mounted) {
         return; // only needed because the provider is autoDispose (see notes)
+      }
       _history.clear();
       state = CartState(status: CheckoutStatus.success, orderId: id);
     } on CheckoutException catch (e) {

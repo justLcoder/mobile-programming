@@ -47,8 +47,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     emit(state.copyWith(status: CheckoutStatus.submitting));
     try {
       final id = await _api.submit(state.total);
-      if (emit.isDone)
+      if (emit.isDone) {
         return; // bloc closed / handler cancelled during the await
+      }
       emit(CartState(status: CheckoutStatus.success, orderId: id));
     } on CheckoutException catch (err) {
       if (emit.isDone) return;

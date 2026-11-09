@@ -24,8 +24,9 @@ class CartCubit extends Cubit<CartState> {
     emit(state.copyWith(status: CheckoutStatus.submitting));
     try {
       final id = await _api.submit(state.total);
-      if (isClosed)
+      if (isClosed) {
         return; // page popped during the await: emit after close() throws
+      }
       emit(CartState(status: CheckoutStatus.success, orderId: id));
     } on CheckoutException catch (e) {
       if (isClosed) return;
