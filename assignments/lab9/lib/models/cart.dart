@@ -36,6 +36,67 @@ extension CartLines on List<CartLine> {
       if (l.product.id != productId) l,
   ];
 
+  List<CartLine> changeQty(String id, int delta) => [
+    for (final l in this)
+      if (l.product.id != id)
+        l
+      else if (l.qty + delta > 0)
+        l.copyWith(qty: l.qty + delta),
+  ];
+
   double get subtotal => fold(0, (s, l) => s + l.subtotal);
   int get itemCount => fold(0, (s, l) => s + l.qty);
+}
+
+enum CheckoutStatus { idle, submitting, success, failure }
+
+const _keep = Object(); // lets copyWith set a nullable field back to null
+
+class CartState {
+  const CartState({
+    this.lines = const [],
+    this.coupon,
+    this.couponError,
+    this.status = CheckoutStatus.idle,
+    this.orderId,
+    this.checkoutError,
+  });
+
+  final List<CartLine> lines;
+  final String? coupon;
+  final String? couponError;
+  final CheckoutStatus status;
+  final String? orderId;
+  final String? checkoutError;
+
+  // T3: derived values are getters, never stored fields
+  int get itemCount => lines.itemCount;
+  double get subtotal => lines.subtotal;
+  double get discount => coupon == 'SAVE10' ? subtotal * 0.10 : 0;
+  double get total => subtotal - discount;
+
+  CartState copyWith({
+    List<CartLine>? lines,
+    Object? coupon = _keep,
+    Object? couponError = _keep,
+    CheckoutStatus? status,
+    Object? orderId = _keep,
+    Object? checkoutError = _keep,
+  }) => CartState(
+    lines: lines ?? this.lines,
+    coupon: identical(coupon, _keep) ? this.coupon : coupon as String?,
+    couponError: identical(couponError, _keep)
+        ? this.couponError
+        : couponError as String?,
+    status: status ?? this.status,
+    orderId: identical(orderId, _keep) ? this.orderId : orderId as String?,
+    checkoutError: identical(checkoutError, _keep)
+        ? this.checkoutError
+        : checkoutError as String?,
+  );
+
+  /// Pure coupon rule, shared by all four styles.
+  CartState withCoupon(String code) => code.trim().toUpperCase() == 'SAVE10'
+      ? copyWith(coupon: 'SAVE10', couponError: null)
+      : copyWith(coupon: null, couponError: 'Unknown coupon "$code"');
 }

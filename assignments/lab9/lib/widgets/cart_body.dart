@@ -7,11 +7,11 @@ class CartBody extends StatelessWidget {
     super.key,
     required this.lines,
     required this.onAdd,
-    required this.onRemove,
+    required this.onQtyChanged,
   });
   final List<CartLine> lines;
   final void Function(Product) onAdd;
-  final void Function(String productId) onRemove;
+  final void Function(String productId, int delta) onQtyChanged;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -39,9 +39,19 @@ class CartBody extends StatelessWidget {
                       key: ValueKey(l.product.id),
                       title: Text(l.product.name),
                       subtitle: Text('× ${l.qty}'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => onRemove(l.product.id),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: () => onQtyChanged(l.product.id, -1),
+                          ),
+                          Text('${l.qty}'),
+                          IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () => onQtyChanged(l.product.id, 1),
+                          ),
+                        ],
                       ),
                     ),
                 ],
