@@ -1,0 +1,7 @@
+0 Phone
+1 Mouse
+2 Keyboard
+3 CardHolder
+4 Pen
+5 Calculator
+6 Nothing
