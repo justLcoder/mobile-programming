@@ -22,7 +22,10 @@ class AppState extends ChangeNotifier {
     final watch = Stopwatch()..start();
     final predictions = classifier.classify(bytes);
     watch.stop();
-    debugPrint('classify() took ${watch.elapsedMilliseconds} ms');
+    debugPrint(
+      'RESULT [${source.label}] ${watch.elapsedMilliseconds} ms: '
+      '${predictions.take(3).map((p) => '${p.label} ${(p.confidence * 100).toStringAsFixed(1)} %').join(', ')}',
+    );
 
     final entry = HistoryEntry(
       bytes: bytes,
